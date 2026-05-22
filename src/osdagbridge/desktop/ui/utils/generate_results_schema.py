@@ -2,17 +2,12 @@
 Default data schema for Generate Results Table dialog.
 
 Purpose:
-Temporary centralized source of default values for all result tables until
-real bindings / calculations are connected.
-
-Usage:
-table = GENERATE_RESULTS_DEFAULTS["model_definition"]["bridge_configuration"]["bridge_configuration_summary"]
-
-columns = table["columns"]
-rows = table["rows"]
+Centralized source of table structure (columns) for all result tables.
+Rows are intentionally empty — resolvers in generate_results_values_builder.py
+populate them with live values when the user has entered the required inputs.
 """
 
-
+EMPTY = "-"
 
 GENERATE_RESULTS_DEFAULTS = {
 
@@ -36,8 +31,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Skew Angle (deg)",
                 ],
                 "rows": [
-                    [12.50, 30.00, 4, 3.00, 0.75, 0],
-                    [12.50, 30.00, 4, 3.00, 0.75, 0],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -55,9 +49,9 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Thermal Expansion Coefficient (×10⁻⁶/°C)",
                 ],
                 "rows": [
-                    ["Girder",         "E35", 490, 350, 200000, 7690, 0.30, 12e-6],
-                    ["Cross Bracing",  "E350", 490, 350, 200000, 76900, 0.30, 12e-6],
-                    ["End Diagram",    "E350", 490, 350, 200000, 76900, 0.30, 12e-6],
+                    ["Girder",        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                    ["Cross Bracing", EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                    ["End Diaphragm", EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -75,9 +69,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Poisson's Ratio, ν",
                 ],
                 "rows": [
-                    ["Girder",        "M40", 40, 3.5, 34000, 6.0, 25.0, 0.20],
-                    ["Cross Bracing", "M35", 35, 3.2, 32000, 6.5, 25.0, 0.20],
-                    ["End Diaphram",  "M30", 30, 2.9, 30000, 7.0, 25.0, 0.20],
+                    ["Deck Slab", EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -96,7 +88,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Total Load (kN/m)",
                 ],
                 "rows": [
-                    [55.0, 8.5, 12.0, 75.5],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -108,8 +100,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Impact Factor",
                 ],
                 "rows": [
-                    ["70R Wheeled", 1.25],
-                    ["Class A",     1.10],
+                    [EMPTY, EMPTY],
                 ],
             },
 
@@ -125,7 +116,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Gust Factor, G",
                 ],
                 "rows": [
-                    [39, 42, 1100, 1.8, 0.75, 2.0],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -141,7 +132,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Vertical Acceleration Coefficient, Aᵥ",
                 ],
                 "rows": [
-                    ["III", 0.16, 1.0, 2.5, 0.08, 0.04],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -155,7 +146,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Temperature Fall Change, ΔTfₐₗₗ (°C)",
                 ],
                 "rows": [
-                    [45, 5, 18, -20],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -167,8 +158,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Expression",
                 ],
                 "rows": [
-                    ["ULS-1", "1.35DL + 1.5LL"],
-                    ["SLS-1", "1.0DL + 1.0LL"],
+                    [EMPTY, EMPTY],
                 ],
             },
         },
@@ -193,10 +183,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Cross-section Class",
                 ],
                 "rows": [
-                    ["Girder 1", 1800, 500, 500, 25, 30, 16, 42000, 2.1e11, "Plastic"],
-                    ["Girder 2", 1800, 500, 500, 25, 30, 16, 42000, 2.1e11, "Plastic"],
-                    ["Girder 3", 1800, 500, 500, 25, 30, 16, 42000, 2.1e11, "Plastic"],
-                    ["Girder 4", 1800, 500, 500, 25, 30, 16, 42000, 2.1e11, "Plastic"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -209,7 +196,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Spacing (m)",
                 ],
                 "rows": [
-                    ["X-Bracing", "ISA100x100x10", 5.0],
+                    [EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -221,7 +208,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Section",
                 ],
                 "rows": [
-                    ["Plate Girder", "PL 500x12"],
+                    [EMPTY, EMPTY],
                 ],
             },
 
@@ -236,7 +223,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Number per Section",
                 ],
                 "rows": [
-                    [20, 100, 495, 385, 2],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -251,7 +238,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Bottom Cover (mm)",
                 ],
                 "rows": [
-                    [220, "16@150", "12@200", 40, 30],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -274,10 +261,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Minimum Bending Moment, Mₘᵢₙ (kNm)",
                 ],
                 "rows": [
-                    ["Girder 1", 9250, -1200],
-                    ["Girder 2", 9100, -1180],
-                    ["Girder 3", 9100, -1180],
-                    ["Girder 4", 9250, -1200],
+                    [EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -290,10 +274,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Minimum Shear Force, Vₘᵢₙ (kN)",
                 ],
                 "rows": [
-                    ["Girder 1", 1420, -310],
-                    ["Girder 2", 1395, -300],
-                    ["Girder 3", 1395, -300],
-                    ["Girder 4", 1420, -310],
+                    [EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -311,10 +292,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Temperature Load, TL (kNm)",
                 ],
                 "rows": [
-                    ["Girder 1", 2850, 450, 950, 4200, 120, 180, 250],
-                    ["Girder 2", 2800, 440, 930, 4100, 115, 175, 240],
-                    ["Girder 3", 2800, 440, 930, 4100, 115, 175, 240],
-                    ["Girder 4", 2850, 450, 950, 4200, 120, 180, 250],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -332,10 +310,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Temperature Load, TL (kN)",
                 ],
                 "rows": [
-                    ["Girder 1", 440, 70, 150, 680, 25, 40, 50],
-                    ["Girder 2", 430, 68, 145, 665, 24, 38, 48],
-                    ["Girder 3", 430, 68, 145, 665, 24, 38, 48],
-                    ["Girder 4", 440, 70, 150, 680, 25, 40, 50],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -354,10 +329,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 28, "L/800", "PASS"],
-                    ["Girder 2", 27, "L/800", "PASS"],
-                    ["Girder 3", 27, "L/800", "PASS"],
-                    ["Girder 4", 28, "L/800", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -371,10 +343,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 42, "L/600", "PASS"],
-                    ["Girder 2", 41, "L/600", "PASS"],
-                    ["Girder 3", 41, "L/600", "PASS"],
-                    ["Girder 4", 42, "L/600", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -394,8 +363,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Allowable",
                 ],
                 "rows": [
-                    ["Girder 1", 180, 165, 72, 315],
-                    ["Girder 2", 176, 162, 70, 315],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -408,8 +376,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Allowable Stress (MPa)",
                 ],
                 "rows": [
-                    ["Girder 1", 12.5, 19.2],
-                    ["Girder 2", 12.1, 19.2],
+                    [EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -422,8 +389,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Allowable Stress (MPa)",
                 ],
                 "rows": [
-                    ["Girder 1", 220, 400],
-                    ["Girder 2", 215, 400],
+                    [EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -448,8 +414,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 9250, 12800, 0.72, "PASS"],
-                    ["Girder 2", 9100, 12800, 0.71, "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -464,8 +429,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 1420, 1850, 0.77, "PASS"],
-                    ["Girder 2", 1395, 1850, 0.75, "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -481,10 +445,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 9250, 11200, 0.83, "IRC 22 Cl. 603.3.3.3", "PASS"],
-                    ["Girder 2", 9100, 11200, 0.81, "IRC 22 Cl. 603.3.3.3", "PASS"],
-                    ["Girder 3", 9100, 11200, 0.81, "IRC 22 Cl. 603.3.3.3", "PASS"],
-                    ["Girder 4", 9250, 11200, 0.83, "IRC 22 Cl. 603.3.3.3", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -502,10 +463,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 4100, 9800, 0.78, 0.62, 0.42, "IRC 22 Cl. 603.3.3.1", "PASS"],
-                    ["Girder 2", 4050, 9800, 0.78, 0.62, 0.41, "IRC 22 Cl. 603.3.3.1", "PASS"],
-                    ["Girder 3", 4050, 9800, 0.78, 0.62, 0.41, "IRC 22 Cl. 603.3.3.1", "PASS"],
-                    ["Girder 4", 4100, 9800, 0.78, 0.62, 0.42, "IRC 22 Cl. 603.3.3.1", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -524,7 +482,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 28, "L/800", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -540,10 +498,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 42, 30000, 50.0, "IRC 22 Cl. 604.3.2", "PASS"],
-                    ["Girder 2", 41, 30000, 50.0, "IRC 22 Cl. 604.3.2", "PASS"],
-                    ["Girder 3", 41, 30000, 50.0, "IRC 22 Cl. 604.3.2", "PASS"],
-                    ["Girder 4", 42, 30000, 50.0, "IRC 22 Cl. 604.3.2", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -617,7 +572,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 72, 110, "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -631,7 +586,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Stud Group 1", 38, 65, "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -678,10 +633,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Clause Reference",
                 ],
                 "rows": [
-                    ["Girder 1", 1420, 167.4, 118, 7840, 145, 118, "IRC 22 Cl. 606.4.1"],
-                    ["Girder 2", 1395, 167.4, 120, 7840, 145, 120, "IRC 22 Cl. 606.4.1"],
-                    ["Girder 3", 1395, 167.4, 120, 7840, 145, 120, "IRC 22 Cl. 606.4.1"],
-                    ["Girder 4", 1420, 167.4, 118, 7840, 145, 118, "IRC 22 Cl. 606.4.1"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -697,10 +649,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Clause Reference",
                 ],
                 "rows": [
-                    ["Girder 1", 420, 52.4, 2, 250, "IRC 22 Cl. 606.4.2"],
-                    ["Girder 2", 410, 52.4, 2, 256, "IRC 22 Cl. 606.4.2"],
-                    ["Girder 3", 410, 52.4, 2, 256, "IRC 22 Cl. 606.4.2"],
-                    ["Girder 4", 420, 52.4, 2, 250, "IRC 22 Cl. 606.4.2"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -719,10 +668,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 118, 250, 118, 600, 660, 400, 400, "PASS"],
-                    ["Girder 2", 120, 256, 120, 600, 660, 400, 400, "PASS"],
-                    ["Girder 3", 120, 256, 120, 600, 660, 400, 400, "PASS"],
-                    ["Girder 4", 118, 250, 118, 600, 660, 400, 400, "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -744,10 +690,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 20, 25, "20 ≤ 50 ✓", 100, "100 ≥ 80 ✓", 42, 25, 35, 30, "IRC 22 Cl. 606.6", "PASS"],
-                    ["Girder 2", 20, 25, "20 ≤ 50 ✓", 100, "100 ≥ 80 ✓", 42, 25, 35, 30, "IRC 22 Cl. 606.6", "PASS"],
-                    ["Girder 3", 20, 25, "20 ≤ 50 ✓", 100, "100 ≥ 80 ✓", 42, 25, 35, 30, "IRC 22 Cl. 606.6", "PASS"],
-                    ["Girder 4", 20, 25, "20 ≤ 50 ✓", 100, "100 ≥ 80 ✓", 42, 25, 35, 30, "IRC 22 Cl. 606.6", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -792,10 +735,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", 0.22, 0.30, 1050, 1340, 16, 150, "IRC 22 Cl. 604.4", "PASS"],
-                    ["Girder 2", 0.21, 0.30, 1050, 1340, 16, 150, "IRC 22 Cl. 604.4", "PASS"],
-                    ["Girder 3", 0.21, 0.30, 1050, 1340, 16, 150, "IRC 22 Cl. 604.4", "PASS"],
-                    ["Girder 4", 0.22, 0.30, 1050, 1340, 16, 150, "IRC 22 Cl. 604.4", "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -816,9 +756,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Status",
                 ],
                 "rows": [
-                    ["Girder 1", "Flexural Resistance",  9250, 12800,   0.72, "PASS"],
-                    ["Girder 1", "Shear Resistance",     1420, 1850,    0.77, "PASS"],
-                    ["Girder 1", "Live Load Deflection",   28, "L/800", "-",  "PASS"],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },

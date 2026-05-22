@@ -1,38 +1,4 @@
-from osdagbridge.core.utils.common import (
-    KEY_SPAN,
-    KEY_SKEW_ANGLE,
-    KEY_GIRDER,
-    KEY_CROSS_BRACING,
-    KEY_END_DIAPHRAGM,
-    KEY_DECK_CONCRETE_GRADE_BASIC,
-    KEY_TS_OVERALL_WIDTH,
-    KEY_TS_NO_OF_GIRDERS,
-    KEY_TS_GIRDER_SPACING,
-    KEY_TS_DECK_OVERHANG,
-    KEY_TS_DECK_THICKNESS,
-    KEY_GIRDER_DEPTH,
-    KEY_GIRDER_TOP_FLANGE_WIDTH,
-    KEY_GIRDER_TOP_FLANGE_THICKNESS,
-    KEY_GIRDER_BOTTOM_FLANGE_WIDTH,
-    KEY_GIRDER_BOTTOM_FLANGE_THICKNESS,
-    KEY_GIRDER_WEB_THICKNESS,
-    KEY_GIRDER_SECTIONAL_AREA,
-    KEY_GIRDER_SECTIONAL_IZ,
-    KEY_CROSS_BRACING_TYPE,
-    KEY_CROSS_BRACING_SECTION,
-    KEY_CROSS_BRACING_SPACING,
-    KEY_END_DIAPHRAGM_TYPE,
-    KEY_END_DIAPHRAGM_BRACING_SECTION_DESIGNATION,
-    KEY_DS_STUD_DIAMETER,
-    KEY_DS_STUD_HEIGHT,
-    KEY_DS_STUD_ULTIMATE_STRENGTH,
-    KEY_DS_STUD_YIELD_STRENGTH,
-    KEY_DS_STUD_COUNT,
-    KEY_DS_REINF_MATERIAL,
-    KEY_DS_REINF_BOUNDS,
-    KEY_DS_TOP_CLEAR_COVER,
-    KEY_DS_BOTTOM_CLEAR_COVER,
-)
+from osdagbridge.core.utils.common import *
 
 # ── Empty value sentinel ──────────────────────────────────────────────────────
 
@@ -421,10 +387,482 @@ def resolve_deck_slab_properties(input_dict: dict, bridge=None) -> dict | None:
         ]],
     }
 
+# ── Resolvers — Load Definitions ─────────────────────────────────────────────
+
+def resolve_live_load_definitions(input_dict: dict, bridge=None) -> dict | None:
+    """
+    Populate Vehicle Class and Impact Factor from user-selected vehicle types.
+    KEY_VEHICLE holds a list of selected vehicle class strings.
+    Impact factor is looked up per IRC:6 clause based on span.
+    """
+    vehicles = input_dict.get(KEY_VEHICLE)
+    span     = input_dict.get(KEY_SPAN)
+
+    if not _has(vehicles):
+        return None
+
+    # Normalise: KEY_VEHICLE may be a single string or a list
+    if isinstance(vehicles, str):
+        vehicles = [vehicles]
+
+    # IRC:6 Cl.208.2 impact factor formula: 4.5/(6+L) for Class A/B;
+    # 10% for 70R wheeled; 25% for 70R tracked/Class AA tracked.
+    # Show formula string when span is available, else EMPTY.
+    def _impact(vehicle_label: str) -> str:
+        label = str(vehicle_label).lower()
+        if not _has(span):
+            return EMPTY
+        L = float(span)
+        if "70r" in label and "tracked" in label:
+            return "25%"
+        if "70r" in label or "aa" in label:
+            return "10%"
+        # Class A / B
+        if L <= 3:
+            return "50%"
+        pct = round(4.5 / (6 + L) * 100, 1)
+        return f"{pct}%"
+
+    rows = [[_val(v), _impact(v)] for v in vehicles]
+
+    return {
+        "id":    "live_load_definitions",
+        "label": "Live Load Definitions",
+        "columns": ["Vehicle Class", "Impact Factor"],
+        "rows":  rows,
+    }
+
+
+# ── Resolvers — Deflections (Analysis Results) ────────────────────────────────
+
+def resolve_deflection_live_load(input_dict: dict, bridge=None) -> dict | None:
+    """
+    Analysis-result deflection table — live load only.
+    KEY_DO_SLS_DEFLECTION stores the user-entered/computed deflection limit toggle.
+    Actual deflection values come from analysis; only the limit input is available
+    here, so we show the user's limit and leave the computed value as EMPTY.
+    """
+    defl_limit = input_dict.get(KEY_DO_SLS_DEFLECTION)
+    n_girders  = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+
+    try:
+        n = int(n_girders)
+    except Exception:
+        return None
+
+    rows = [
+        [f"Girder {i}", EMPTY, _val(defl_limit) if _has(defl_limit) else EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "deflection_live_load",
+        "label": "Deflection - Live Load",
+        "columns": [
+            "Girder",
+            "Deflection due to Live Load, δ_ₗᵢᵥₑ (mm)",
+            "Permissible Limit",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+def resolve_deflection_total_load(input_dict: dict, bridge=None) -> dict | None:
+    """
+    Analysis-result deflection table — total load.
+    Permissible limit = Span / 600 (IRC:6 Cl.211.2).
+    """
+    span      = input_dict.get(KEY_SPAN)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+
+    try:
+        n = int(n_girders)
+    except Exception:
+        return None
+
+    limit_str = (
+        f"L/600 = {round(float(span) * 1000 / 600, 1)} mm"
+        if _has(span) else EMPTY
+    )
+
+    rows = [
+        [f"Girder {i}", EMPTY, limit_str, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "deflection_total_load",
+        "label": "Deflection - Total Load",
+        "columns": [
+            "Girder",
+            "Total Deflection, δₜₒₜₐₗ (mm)",
+            "Permissible Limit",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Resolvers — ULS Checks ────────────────────────────────────────────────────
+
+def _uls_girder_rows(n_girders) -> int | None:
+    try:
+        return int(n_girders)
+    except Exception:
+        return None
+
+
+def resolve_flexural_resistance_check(input_dict: dict, bridge=None) -> dict | None:
+    dcr       = input_dict.get(KEY_UTIL_FLEXURE)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", EMPTY, EMPTY, _val(dcr) if _has(dcr) else EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "flexural_resistance_check",
+        "label": "Flexural Resistance Check",
+        "columns": [
+            "Girder",
+            "Ultimate Bending Moment, Mᵤ (kNm)",
+            "Design Bending Moment, Mᵈ (kNm)",
+            "Demand to Capacity Ratio, DCR",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+def resolve_shear_resistance_check(input_dict: dict, bridge=None) -> dict | None:
+    dcr       = input_dict.get(KEY_UTIL_SHEAR)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", EMPTY, EMPTY, _val(dcr) if _has(dcr) else EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "shear_resistance_check",
+        "label": "Shear Resistance Check",
+        "columns": [
+            "Girder",
+            "Ultimate Shear Force, Vᵤ (kN)",
+            "Design Shear Force, Vᵈ (kN)",
+            "Demand to Capacity Ratio, DCR",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+def resolve_bending_shear_interaction_check(input_dict: dict, bridge=None) -> dict | None:
+    dcr       = input_dict.get(KEY_UTIL_INTERACTION)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", EMPTY, EMPTY, _val(dcr) if _has(dcr) else EMPTY, EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "bending_shear_interaction_check",
+        "label": "Bending-Shear Interaction Check",
+        "columns": [
+            "Girder",
+            "Ultimate Bending Moment, Mᵤ (kNm)",
+            "Reduced Design Bending Resistance, Mᵈᵥ (kNm)",
+            "Demand to Capacity Ratio, DCR",
+            "Clause Reference",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+def resolve_lateral_torsional_buckling_check(input_dict: dict, bridge=None) -> dict | None:
+    dcr       = input_dict.get(KEY_UTIL_LTB)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", EMPTY, EMPTY, EMPTY, EMPTY, _val(dcr) if _has(dcr) else EMPTY, EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "lateral_torsional_buckling_check",
+        "label": "Lateral Torsional Buckling Check - Construction Stage",
+        "columns": [
+            "Girder",
+            "Ultimate Bending Moment, Mᵤ (kNm)",
+            "LTB Design Buckling Resistance, Mᵦ (kNm)",
+            "LTB Reduction Factor, χ_LT",
+            "Non-Dimensional Slenderness, λ̄_LT",
+            "Demand to Capacity Ratio, DCR",
+            "Clause Reference",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Resolvers — SLS / Stress ──────────────────────────────────────────────────
+
+def resolve_stress_reinf_service(input_dict: dict, bridge=None) -> dict | None:
+    stress    = input_dict.get(KEY_DO_SLS_STRESS)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", _val(stress) if _has(stress) else EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "stress_reinf_service",
+        "label": "Stress in Reinforcement - Service",
+        "columns": [
+            "Girder",
+            "Stress in Reinforcement, σᵣₑᵢₙf (MPa)",
+            "Allowable Stress (MPa)",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Resolvers — Fatigue ───────────────────────────────────────────────────────
+
+def resolve_fatigue_assessment_girder(input_dict: dict, bridge=None) -> dict | None:
+    fatigue   = input_dict.get(KEY_DO_ULS_FATIGUE)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    rows = [
+        [f"Girder {i}", _val(fatigue) if _has(fatigue) else EMPTY, EMPTY, EMPTY]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "fatigue_assessment_girder",
+        "label": "Fatigue Assessment - Girder",
+        "columns": [
+            "Girder",
+            "Stress Range, Δσ (MPa)",
+            "Fatigue Limit, ffd (MPa)",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Resolvers — Shear Connector Capacity (partial) ───────────────────────────
+
+def resolve_shear_connector_capacity(input_dict: dict, bridge=None) -> dict | None:
+    """
+    Populate columns that come directly from user inputs.
+    Computed columns (Qu, Qd, ΣQd, Clause) remain EMPTY until analysis runs.
+    """
+    diameter  = input_dict.get(KEY_DS_STUD_DIAMETER)
+    height    = input_dict.get(KEY_DS_STUD_HEIGHT)
+    fu_stud   = input_dict.get(KEY_DS_STUD_ULTIMATE_STRENGTH)
+    count     = input_dict.get(KEY_DS_STUD_COUNT)
+    n_girders = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    # fck comes from the material DB via bridge if available
+    fck = EMPTY
+    ecm = EMPTY
+    try:
+        cp  = bridge._build_material_props().concrete_prop
+        fck = _num(cp.fck)
+        ecm = _num(cp.Ecm)
+    except Exception:
+        pass
+
+    rows = [
+        [
+            f"Girder {i}",
+            _num(diameter) if _has(diameter) else EMPTY,
+            _num(height)   if _has(height)   else EMPTY,
+            _num(fu_stud)  if _has(fu_stud)  else EMPTY,
+            fck,
+            ecm,
+            EMPTY,   # Qu — computed
+            EMPTY,   # Qd — computed
+            _val(count) if _has(count) else EMPTY,
+            EMPTY,   # ΣQd — computed
+            EMPTY,   # Clause
+        ]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "shear_connector_capacity",
+        "label": "Shear Connector Capacity",
+        "columns": [
+            "Girder",
+            "Stud Diameter, d (mm)",
+            "Stud Height, h (mm)",
+            "Ultimate Tensile Strength of Stud, fu (MPa)",
+            "Characteristic Compressive Strength, fck (MPa)",
+            "Modulus of Elasticity of Concrete, Ec (MPa)",
+            "Nominal Capacity per Stud, Qu (kN)",
+            "Design Capacity per Stud, Qd (kN)",
+            "No. of Studs per Section",
+            "Total Design Capacity, ΣQd (kN)",
+            "Clause Reference",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Resolvers — Crack Width Check (partial) ───────────────────────────────────
+
+def resolve_crack_width_check(input_dict: dict, bridge=None) -> dict | None:
+    bar_dia     = input_dict.get(KEY_DS_REINF_BOUNDS)
+    spacing_t   = input_dict.get(KEY_DECK_REINF_SPACING_TRANS)
+    spacing_l   = input_dict.get(KEY_DECK_REINF_SPACING_LONG)
+    n_girders   = input_dict.get(KEY_TS_NO_OF_GIRDERS)
+
+    if not _has(n_girders):
+        return None
+    n = _uls_girder_rows(n_girders)
+    if n is None:
+        return None
+
+    # Use transverse spacing as the governing bar spacing for crack width
+    spacing = spacing_t if _has(spacing_t) else spacing_l
+
+    rows = [
+        [
+            f"Girder {i}",
+            EMPTY,   # wk — computed
+            EMPTY,   # permissible limit — computed
+            EMPTY,   # As,min — computed
+            EMPTY,   # As,prov — computed
+            _val(bar_dia) if _has(bar_dia) else EMPTY,
+            _val(spacing) if _has(spacing) else EMPTY,
+            EMPTY,   # Clause
+            EMPTY,   # Status
+        ]
+        for i in range(1, n + 1)
+    ]
+
+    return {
+        "id":    "crack_width_check",
+        "label": "Crack Width Check",
+        "columns": [
+            "Girder",
+            "Calculated Crack Width, wₖ (mm)",
+            "Permissible Crack Width Limit (mm)",
+            "Minimum Reinforcement Area, As,min (mm²)",
+            "Reinforcement Area Provided, As,prov (mm²)",
+            "Bar Diameter, φ (mm)",
+            "Bar Spacing, s (mm)",
+            "Clause Reference",
+            "Status",
+        ],
+        "rows": rows,
+    }
+
+
+# ── Fix: deck_slab_properties — Bottom Reinforcement column ──────────────────
+# The schema has "Bottom Reinforcement" but the original resolver only returns
+# "Reinforcement Material" and "Reinforcement Size".  Override the resolver to
+# match the schema column list exactly.
+
+def resolve_deck_slab_properties(input_dict: dict, bridge=None) -> dict | None:
+    thickness  = input_dict.get(KEY_TS_DECK_THICKNESS)
+    reinf_size = input_dict.get(KEY_DS_REINF_BOUNDS)
+    reinf_mat  = input_dict.get(KEY_DS_REINF_MATERIAL)
+    top_cover  = input_dict.get(KEY_DS_TOP_CLEAR_COVER)
+    bot_cover  = input_dict.get(KEY_DS_BOTTOM_CLEAR_COVER)
+
+    if not _has(thickness):
+        return None
+
+    # Top reinforcement: combine material + size when both available
+    top_reinf = (
+        f"{reinf_mat} — {reinf_size} mm"
+        if _has(reinf_mat) and _has(reinf_size)
+        else _val(reinf_mat or reinf_size)
+    )
+    # Bottom reinforcement: same bar size/material, different cover — show same label
+    bot_reinf = top_reinf   # symmetrical until a separate key is introduced
+
+    return {
+        "id":    "deck_slab_properties",
+        "label": "Deck Slab Properties",
+        "columns": [
+            "Thickness (mm)",
+            "Top Reinforcement",
+            "Bottom Reinforcement",
+            "Top Cover (mm)",
+            "Bottom Cover (mm)",
+        ],
+        "rows": [[
+            _mm(thickness),
+            top_reinf,
+            bot_reinf,
+            _num(top_cover),
+            _num(bot_cover),
+        ]],
+    }
+
+
 
 # ── Registry — must be after all resolver definitions ────────────────────────
 
 RESOLVER_MAP: dict[str, callable] = {
+    # ── Model Definition ──────────────────────────────────────────────────
     "bridge_configuration_summary":       resolve_bridge_config_summary,
     "material_properties_steel":          resolve_material_properties_steel,
     "material_properties_concrete":       resolve_material_properties_concrete,
@@ -432,5 +870,33 @@ RESOLVER_MAP: dict[str, callable] = {
     "cross_bracing_section_properties":   resolve_cross_bracing_section_properties,
     "end_diaphragm_section_properties":   resolve_end_diaphragm_section_properties,
     "shear_stud_properties":              resolve_shear_stud_properties,
-    "deck_slab_properties":               resolve_deck_slab_properties,
+    "deck_slab_properties":               resolve_deck_slab_properties,       # ← overrides original
+
+    # ── Load Definitions ──────────────────────────────────────────────────
+
+    # ── Analysis Results — Deflections ────────────────────────────────────
+    "deflection_live_load":               resolve_deflection_live_load,
+    "deflection_total_load":              resolve_deflection_total_load,
+
+    # ── ULS Checks ────────────────────────────────────────────────────────
+    "flexural_resistance_check":          resolve_flexural_resistance_check,
+    "shear_resistance_check":             resolve_shear_resistance_check,
+    "bending_shear_interaction_check":    resolve_bending_shear_interaction_check,
+    "lateral_torsional_buckling_check":   resolve_lateral_torsional_buckling_check,
+
+    # ── SLS — Deflection Control ──────────────────────────────────────────
+    "deflection_control_live":            resolve_deflection_live_load,        # same data, two table IDs
+    "deflection_control_total":           resolve_deflection_total_load,
+
+    # ── SLS — Stress ──────────────────────────────────────────────────────
+    "stress_reinf_service":               resolve_stress_reinf_service,
+
+    # ── Fatigue ───────────────────────────────────────────────────────────
+    "fatigue_assessment_girder":          resolve_fatigue_assessment_girder,
+
+    # ── Shear Connector ───────────────────────────────────────────────────
+    "shear_connector_capacity":           resolve_shear_connector_capacity,
+
+    # ── Crack Width ───────────────────────────────────────────────────────
+    "crack_width_check":                  resolve_crack_width_check,
 }
