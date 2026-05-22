@@ -55,7 +55,7 @@ GENERATE_RESULTS_DEFAULTS = {
                     "Thermal Expansion Coefficient (×10⁻⁶/°C)",
                 ],
                 "rows": [
-                    ["Girder",         "E350", 490, 350, 200000, 76900, 0.30, 12e-6],
+                    ["Girder",         "E35", 490, 350, 200000, 7690, 0.30, 12e-6],
                     ["Cross Bracing",  "E350", 490, 350, 200000, 76900, 0.30, 12e-6],
                     ["End Diagram",    "E350", 490, 350, 200000, 76900, 0.30, 12e-6],
                 ],

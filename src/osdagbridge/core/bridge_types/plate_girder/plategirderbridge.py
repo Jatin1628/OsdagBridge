@@ -221,7 +221,7 @@ class PlateGirderBridge:
             f"  I_t (J)   : {inp[KEY_GIRDER_TORSION_CONSTANT_IT]:.6f} m^3\n"
             f"{'-'*60}\n"
         )
-
+ 
         self._run_dcr_checks(dataset)
 
     def _build_dtos(self) -> None:

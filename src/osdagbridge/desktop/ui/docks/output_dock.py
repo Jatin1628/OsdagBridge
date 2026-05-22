@@ -629,7 +629,7 @@ class OutputDock(QWidget):
         input_d_values = getattr(self.parent.input_dock, "input_dock_values", {})
         merged = {**input_dict, **input_d_values}
 
-        dlg = GenerateResultsDialog(parent=None, input_dict=merged)
+        dlg = GenerateResultsDialog(parent=None, input_dict=merged, bridge = self.backend)
         dlg.exec()
 
 

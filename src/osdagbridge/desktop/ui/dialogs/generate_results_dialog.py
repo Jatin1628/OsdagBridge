@@ -3,10 +3,10 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 import copy
 from osdagbridge.core.utils.generate_results_values_builder import (
-    resolve_bridge_config_summary,
+    resolve_bridge_config_summary,resolve_material_properties_steel
 )
 
-from PySide6.QtWidgets import (
+from PySide6.QtWidgets import ( 
     QDialog, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QTreeWidget, QTreeWidgetItem, QComboBox, QSizeGrip, QFileDialog,
     QFrame, QTableWidget, QTableWidgetItem, QHeaderView,
@@ -14,9 +14,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
-from osdagbridge.desktop.ui.utils.generate_results_default import GENERATE_RESULTS_DEFAULTS
+from osdagbridge.desktop.ui.utils.generate_results_schema import GENERATE_RESULTS_DEFAULTS
 from osdagbridge.desktop.ui.utils.custom_titlebar import CustomTitleBar
 from osdagbridge.desktop.ui.dialogs.custom_messagebox import CustomMessageBox, MessageBoxType
+from osdagbridge.core.utils.generate_results_values_builder import resolve_table
 
 
 class CheckboxDelegate(QStyledItemDelegate):
@@ -1393,10 +1394,10 @@ class GenerateResultsDialog(QDialog):
     Navigation is handled by a QStackedWidget.
     """
 
-    def __init__(self, parent=None, input_dict: dict = None):
+    def __init__(self, parent=None, input_dict: dict = None, bridge=None):
         super().__init__(parent)
         self._input_dict = input_dict or {}
-
+        self._bridge = bridge
         self.setMinimumWidth(1080)
         self.setMinimumHeight(720)
         self.setObjectName("generate_results_dialog")
@@ -1468,11 +1469,22 @@ class GenerateResultsDialog(QDialog):
         Tables without a resolver keep their placeholder data.
         """
         data = copy.deepcopy(GENERATE_RESULTS_DEFAULTS)
-        data["model_definition"]["bridge_configuration"][
-            "bridge_configuration_summary"
-        ] = resolve_bridge_config_summary(self._input_dict)
 
-        # more lines for other tables, e.g.:
+        for lvl1_val in data.values():
+            for sub_key, sub_val in lvl1_val.items():
+                if sub_key in ("id", "label"):
+                    continue
+                for table_key, table_data in sub_val.items():
+                    if table_key in ("id", "label"):
+                        continue
+                    resolved = resolve_table(
+                        table_data["id"],
+                        self._input_dict,
+                        self._bridge,
+                    )
+                    if resolved is not None:
+                        table_data.update(resolved)
+
         return data
 
     # ── Navigation ──────────────────────────────────────────────────────────
