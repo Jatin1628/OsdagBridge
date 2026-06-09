@@ -1129,10 +1129,13 @@ class BridgeGrillageModel:
         ``"EQ_Y"``            : Vertical seismic (Fy upward, Av = 2/3 × Ah, 20% LL).
         ``"{lf} EQ (a/b/c)"`` : IRC 218.3 combination cases registered with
                                 ``partial_safety_factor``.
+<<<<<<< HEAD
 
         The vertical-dominant combination (c) is also stored on
         ``self.seismic_load_case`` so the ULS Table B.2 SEISMIC combinations
         include it as their EL term.
+=======
+>>>>>>> c33668c (feat(loads): replace patch-load seismic with IRC:6-2017 Cl.218 EQ load cases)
 
         Parameters
         ----------
