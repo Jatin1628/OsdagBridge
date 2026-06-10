@@ -928,6 +928,21 @@ KEY_TD_ED_BOTTOM_CHORD_PROP_ZZ = "transverse_member_design.ed.section_properties
 KEY_TD_ED_BOTTOM_CHORD_PROP_ZV = "transverse_member_design.ed.section_properties.bottom_chord.Zv"
 KEY_TD_ED_BOTTOM_CHORD_PROP_ZUZ = "transverse_member_design.ed.section_properties.bottom_chord.Zuz"
 KEY_TD_ED_BOTTOM_CHORD_PROP_ZUV = "transverse_member_design.ed.section_properties.bottom_chord.Zuv"
+KEY_TD_BOTTOM_CHORD_PROP_L = "transverse_member_design.section_properties.bottom_chord.L"
+KEY_TD_BOTTOM_CHORD_PROP_H = "transverse_member_design.section_properties.bottom_chord.H"
+KEY_TD_BOTTOM_CHORD_PROP_B = "transverse_member_design.section_properties.bottom_chord.B"
+KEY_TD_BOTTOM_CHORD_PROP_TW = "transverse_member_design.section_properties.bottom_chord.tw"
+KEY_TD_BOTTOM_CHORD_PROP_TF = "transverse_member_design.section_properties.bottom_chord.tF"
+KEY_TD_BOTTOM_CHORD_PROP_RZ = "transverse_member_design.section_properties.bottom_chord.rz"
+KEY_TD_BOTTOM_CHORD_PROP_M = "transverse_member_design.section_properties.bottom_chord.M"
+KEY_TD_BOTTOM_CHORD_PROP_A = "transverse_member_design.section_properties.bottom_chord.A"
+KEY_TD_BOTTOM_CHORD_PROP_IZ = "transverse_member_design.section_properties.bottom_chord.Iz"
+KEY_TD_BOTTOM_CHORD_PROP_IV = "transverse_member_design.section_properties.bottom_chord.Iv"
+KEY_TD_BOTTOM_CHORD_PROP_RV = "transverse_member_design.section_properties.bottom_chord.rv"
+KEY_TD_BOTTOM_CHORD_PROP_ZZ = "transverse_member_design.section_properties.bottom_chord.Zz"
+KEY_TD_BOTTOM_CHORD_PROP_ZV = "transverse_member_design.section_properties.bottom_chord.Zv"
+KEY_TD_BOTTOM_CHORD_PROP_ZUZ = "transverse_member_design.section_properties.bottom_chord.Zuz"
+KEY_TD_BOTTOM_CHORD_PROP_ZUV = "transverse_member_design.section_properties.bottom_chord.Zuv"
 # =============================================================================
 # Design Check Keys — paste these into common.py alongside existing KEY_ consts
 # =============================================================================
