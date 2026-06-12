@@ -3564,39 +3564,6 @@ GENERATE_RESULTS_DEFAULTS = {
             },
         },
 
-        "deflections": {
-            "id": "deflections",
-            "label": "Deflections",
-
-            "deflection_live_load": {
-                "id": "deflection_live_load",
-                "label": "Deflection - Live Load",
-                "columns": [
-                    "Girder",
-                    "Deflection due to Live Load, δ_ₗᵢᵥₑ (mm)",
-                    "Permissible Limit",
-                    "Status",
-                ],
-                "rows": [
-                    [EMPTY, EMPTY, EMPTY, EMPTY],
-                ],
-            },
-
-            "deflection_total_load": {
-                "id": "deflection_total_load",
-                "label": "Deflection - Total Load",
-                "columns": [
-                    "Girder",
-                    "Total Deflection, δₜₒₜₐₗ (mm)",
-                    "Permissible Limit",
-                    "Status",
-                ],
-                "rows": [
-                    [EMPTY, EMPTY, EMPTY, EMPTY],
-                ],
-            },
-        },
-
         "stress_results": {
             "id": "stress_results",
             "label": "Stress Results",
@@ -3655,9 +3622,9 @@ GENERATE_RESULTS_DEFAULTS = {
                 "label": "Flexural Resistance Check",
                 "columns": [
                     "Girder",
-                    "Ultimate Bending Moment, Mᵤ (kNm)",
-                    "Design Bending Moment, Mᵈ (kNm)",
-                    "Demand to Capacity Ratio, DCR",
+                    "Design Moment, Mᵈ (kNm)",
+                    "Moment Resistance, Mᵣ (kNm)",
+                    "Utilization Ratio",
                     "Status",
                 ],
                 "rows": [
@@ -3670,9 +3637,9 @@ GENERATE_RESULTS_DEFAULTS = {
                 "label": "Shear Resistance Check",
                 "columns": [
                     "Girder",
-                    "Ultimate Shear Force, Vᵤ (kN)",
-                    "Design Shear Force, Vᵈ (kN)",
-                    "Demand to Capacity Ratio, DCR",
+                    "Design Shear, Vᵈ (kN)",
+                    "Shear Resistance, Vᵣ (kN)",
+                    "Utilization Ratio",
                     "Status",
                 ],
                 "rows": [
@@ -3685,14 +3652,13 @@ GENERATE_RESULTS_DEFAULTS = {
                 "label": "Bending-Shear Interaction Check",
                 "columns": [
                     "Girder",
-                    "Ultimate Bending Moment, Mᵤ (kNm)",
-                    "Reduced Design Bending Resistance, Mᵈᵥ (kNm)",
-                    "Demand to Capacity Ratio, DCR",
-                    "Clause Reference",
+                    "Design Moment, Mᵈ (kNm)",
+                    "Reduced Resistance, Mᵈᵥ (kNm)",
+                    "Utilization Ratio",
                     "Status",
                 ],
                 "rows": [
-                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
@@ -3701,16 +3667,13 @@ GENERATE_RESULTS_DEFAULTS = {
                 "label": "Lateral Torsional Buckling Check - Construction Stage",
                 "columns": [
                     "Girder",
-                    "Ultimate Bending Moment, Mᵤ (kNm)",
-                    "LTB Design Buckling Resistance, Mᵦ (kNm)",
-                    "LTB Reduction Factor, χ_LT",
-                    "Non-Dimensional Slenderness, λ̄_LT",
-                    "Demand to Capacity Ratio, DCR",
-                    "Clause Reference",
+                    "Design Moment, Mᵈ (kNm)",
+                    "LTB Resistance, Mᵦ (kNm)",
+                    "Utilization Ratio",
                     "Status",
                 ],
                 "rows": [
-                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
         },
@@ -3719,9 +3682,9 @@ GENERATE_RESULTS_DEFAULTS = {
             "id": "sls_checks",
             "label": "SLS Checks",
 
-            "deflection_control_live": {
-                "id": "deflection_control_live",
-                "label": "Deflection Control - Live Load",
+            "deflection_live_load": {
+                "id": "deflection_live_load",
+                "label": "Deflection - Live Load",
                 "columns": [
                     "Girder",
                     "Deflection due to Live Load, δ_ₗᵢᵥₑ (mm)",
@@ -3733,19 +3696,17 @@ GENERATE_RESULTS_DEFAULTS = {
                 ],
             },
 
-            "deflection_control_total": {
-                "id": "deflection_control_total",
-                "label": "Deflection Control - Total Load",
+            "deflection_total_load": {
+                "id": "deflection_total_load",
+                "label": "Deflection - Total Load",
                 "columns": [
                     "Girder",
                     "Total Deflection, δₜₒₜₐₗ (mm)",
-                    "Span, L (mm)",
-                    "Permissible Limit, L/600 (mm)",
-                    "Clause Reference",
+                    "Permissible Limit",
                     "Status",
                 ],
                 "rows": [
-                    [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                    [EMPTY, EMPTY, EMPTY, EMPTY],
                 ],
             },
 
