@@ -1479,11 +1479,10 @@ class IRC22CapacityCalculator:
         res = IRC22_2014.cl_606_3_2_stud_connector_fatigue_strength(
             Nsc=fat.Nsc,
             stud_d_mm=stud.diameter,
-            use_table8=True,
         )
         return {
             "tau_f_MPa" : res["tau_f_MPa"],
-            "Qr_kN"     : res.get("Qr_table8_kN"),
+            "Qr_kN"     : res["Qr_kN"],
             "Nsc"       : fat.Nsc,
             "clause"    : res["clause"],
             "source"    : "IRC22_2014",

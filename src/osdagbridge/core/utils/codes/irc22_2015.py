@@ -1641,9 +1641,8 @@ class IRC22_2014:
     @staticmethod
     def cl_606_3_2_stud_connector_fatigue_strength(
         Nsc,
-        tau_fn_MPa=67.0,       # MPa (default per IRC Table 5/8 guidance)
-        stud_d_mm=None,        # 16, 20, 22, 25 (optional for Table 8)
-        use_table8=False       # if True, return Qr from Table 8 also
+        stud_d_mm,             # stud shank diameter (mm)
+        tau_fn_MPa=67.0,       # MPa (Cl.605.3 shear fatigue strength at 5e6 cycles)
     ):
         """
         IRC:22-2015
@@ -1652,66 +1651,31 @@ class IRC22_2014:
         Equation:
             tau_f = tau_fn * (5e6 / Nsc)^(1/5)
 
-        Optional:
-            Returns Table 8 nominal fatigue strength Qr (kN) for headed studs (phi 16/20/22/25)
-            using log interpolation for intermediate Nsc.
+        Fatigue strength of one stud (shank area):
+            Qr = tau_f * pi * d^2 / 4
+
+        Valid for any stud diameter (Table 8 only tabulates 16/20/22/25 and is
+        reproduced by this equation within rounding).
         """
 
 
         if Nsc <= 0:
             raise ValueError("Nsc must be positive")
 
+        if stud_d_mm is None or stud_d_mm <= 0:
+            raise ValueError("stud_d_mm must be positive")
+
         # --- Clause equation ---
         tau_f_MPa = tau_fn_MPa * ((5e6 / Nsc) ** (1.0 / 5.0))
 
-        result = {
+        A_shank_mm2 = math.pi * (stud_d_mm ** 2) / 4.0
+        Qr_kN = tau_f_MPa * A_shank_mm2 / 1000.0
+
+        return {
             "tau_f_MPa": round(tau_f_MPa, 3),
+            "Qr_kN": round(Qr_kN, 3),
             "clause": "IRC 22:2015 - 606.3.2"
         }
-
-        #  Table 8 values
-        if use_table8:
-            if stud_d_mm is None:
-                raise ValueError("stud_d_mm must be provided when use_table8=True")
-
-            TABLE8_Qr_kN = {
-                25: {1e5: 71, 5e5: 52, 2e6: 39, 1e7: 28, 1e8: 18},
-                22: {1e5: 55, 5e5: 40, 2e6: 30, 1e7: 22, 1e8: 14},
-                20: {1e5: 46, 5e5: 33, 2e6: 25, 1e7: 18, 1e8: 11},
-                16: {1e5: 29, 5e5: 21, 2e6: 16, 1e7: 11, 1e8: 7},
-            }
-
-            d_key = int(round(stud_d_mm))
-            if d_key not in TABLE8_Qr_kN:
-                raise ValueError("stud_d_mm must be one of 16, 20, 22, 25 as per Table 8")
-
-            # log interpolation between nearest points
-            points = sorted(TABLE8_Qr_kN[d_key].items())  # list of (N, Qr)
-            Ns = [p[0] for p in points]
-
-            if Nsc <= Ns[0]:
-                Qr = TABLE8_Qr_kN[d_key][Ns[0]]
-            elif Nsc >= Ns[-1]:
-                Qr = TABLE8_Qr_kN[d_key][Ns[-1]]
-            else:
-                # find bracket
-                for i in range(len(Ns) - 1):
-                    N1, N2 = Ns[i], Ns[i + 1]
-                    if N1 <= Nsc <= N2:
-                        Q1 = TABLE8_Qr_kN[d_key][N1]
-                        Q2 = TABLE8_Qr_kN[d_key][N2]
-
-                        # log interpolation
-                        logN = math.log10(Nsc)
-                        logN1 = math.log10(N1)
-                        logN2 = math.log10(N2)
-
-                        Qr = Q1 + (Q2 - Q1) * ((logN - logN1) / (logN2 - logN1))
-                        break
-
-            result["Qr_table8_kN"] = round(Qr, 3)
-
-        return result
 
 
 
