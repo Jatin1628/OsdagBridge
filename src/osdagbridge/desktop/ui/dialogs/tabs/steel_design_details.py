@@ -49,18 +49,18 @@ from osdagbridge.core.utils.common import (
     KEY_SD_SHEAR_TRANSVERSE_SPACING,
     KEY_SD_SHEAR_STUDS_PER_SECTION,
     KEY_SD_SHEAR_LONGITUDINAL_SPACING,
-    KEY_MP_GIRDER_MASS,
-    KEY_MP_GIRDER_SECTIONAL_AREA,
-    KEY_MP_GIRDER_SECTIONAL_IZ,
-    KEY_MP_GIRDER_SECTIONAL_IY,
-    KEY_MP_GIRDER_RADIUS_GYRATION_Z,
-    KEY_MP_GIRDER_RADIUS_GYRATION_Y,
-    KEY_MP_GIRDER_ELASTIC_MODULUS_ZZ,
-    KEY_MP_GIRDER_ELASTIC_MODULUS_ZY,
-    KEY_MP_GIRDER_PLASTIC_MODULUS_ZUZ,
-    KEY_MP_GIRDER_PLASTIC_MODULUS_ZUY,
-    KEY_MP_GIRDER_TORSION_CONSTANT_IT,
-    KEY_MP_GIRDER_WARPING_CONSTANT_IW,
+    KEY_SD_SECTION_PROP_MASS,
+    KEY_SD_SECTION_PROP_AREA,
+    KEY_SD_SECTION_PROP_IZ,
+    KEY_SD_SECTION_PROP_IV,
+    KEY_SD_SECTION_PROP_RZ,
+    KEY_SD_SECTION_PROP_RV,
+    KEY_SD_SECTION_PROP_ZZ,
+    KEY_SD_SECTION_PROP_ZV,
+    KEY_SD_SECTION_PROP_ZUZ,
+    KEY_SD_SECTION_PROP_ZUV,
+    KEY_SD_SECTION_PROP_IT,
+    KEY_SD_SECTION_PROP_IW,
     KEY_MP_STIFFENER_NO_BEARING_STIFFENERS,
     KEY_MP_STIFFENER_BEARING_THICKNESS,
     KEY_MP_STIFFENER_BEARING_OUTSTAND,
@@ -518,37 +518,25 @@ class SteelDesignDetailsTab(QWidget):
         out["shear_longitudinal_spacing"]       = _str(output_dict.get(KEY_SD_SHEAR_LONGITUDINAL_SPACING))
 
         # ─────────────────────────────────────────────────────────────────────────
-        # SECTION PROPERTIES — per-member KEY_MP_GIRDER_* keys (SI units, .2e format).
-        # The example key locates the active member's ".G{n}.M{m}" suffix.
+        # SECTION PROPERTIES — per-girder KEY_SD_SECTION_PROP_* keys of the designed
+        # section, already in kg/m, cm², cm⁴, cm, cm³, cm⁶ (same values as the report).
         # ─────────────────────────────────────────────────────────────────────────
+        out["mass"] = _str(_sd(KEY_SD_SECTION_PROP_MASS))
+        out["area"] = _str(_sd(KEY_SD_SECTION_PROP_AREA))
+        out["iz"]   = _str(_sd(KEY_SD_SECTION_PROP_IZ))
+        out["iv"]   = _str(_sd(KEY_SD_SECTION_PROP_IV))
+        out["rz"]   = _str(_sd(KEY_SD_SECTION_PROP_RZ))
+        out["rv"]   = _str(_sd(KEY_SD_SECTION_PROP_RV))
+        out["zz"]   = _str(_sd(KEY_SD_SECTION_PROP_ZZ))
+        out["zv"]   = _str(_sd(KEY_SD_SECTION_PROP_ZV))
+        out["zuz"]  = _str(_sd(KEY_SD_SECTION_PROP_ZUZ))
+        out["zuv"]  = _str(_sd(KEY_SD_SECTION_PROP_ZUV))
+        out["it"]   = _str(_sd(KEY_SD_SECTION_PROP_IT))
+        out["iw"]   = _str(_sd(KEY_SD_SECTION_PROP_IW))
+
         def _suffix_for(base: str) -> str:
             """Return the selected girder suffix only."""
             return gsuf if base + gsuf in output_dict else ""
-
-        sec_suf = _suffix_for(KEY_MP_GIRDER_SECTIONAL_AREA)
-
-        def _sec(base_key):
-            """Raw SI value in .2e format (matches the Girder Details tab)."""
-            v = output_dict.get(base_key + sec_suf)
-            if v is None or v == "":
-                return ""
-            try:
-                return f"{float(v):.2e}"
-            except (TypeError, ValueError):
-                return _str(v)
-
-        out["mass"] = _sec(KEY_MP_GIRDER_MASS)
-        out["area"] = _sec(KEY_MP_GIRDER_SECTIONAL_AREA)
-        out["iz"]   = _sec(KEY_MP_GIRDER_SECTIONAL_IZ)
-        out["iv"]   = _sec(KEY_MP_GIRDER_SECTIONAL_IY)
-        out["rz"]   = _sec(KEY_MP_GIRDER_RADIUS_GYRATION_Z)
-        out["rv"]   = _sec(KEY_MP_GIRDER_RADIUS_GYRATION_Y)
-        out["zz"]   = _sec(KEY_MP_GIRDER_ELASTIC_MODULUS_ZZ)
-        out["zv"]   = _sec(KEY_MP_GIRDER_ELASTIC_MODULUS_ZY)
-        out["zuz"]  = _sec(KEY_MP_GIRDER_PLASTIC_MODULUS_ZUZ)
-        out["zuv"]  = _sec(KEY_MP_GIRDER_PLASTIC_MODULUS_ZUY)
-        out["it"]   = _sec(KEY_MP_GIRDER_TORSION_CONSTANT_IT)
-        out["iw"]   = _sec(KEY_MP_GIRDER_WARPING_CONSTANT_IW)
 
         # ─────────────────────────────────────────────────────────────────────────
         # STIFFENER DETAILS — per-member member_properties.stiffener_details.* keys.

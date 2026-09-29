@@ -18,46 +18,6 @@ def _num(value, decimals=2):
         return EMPTY
 
 
-def _cm(value, decimals=2):
-    """Convert metres → cm. Returns EMPTY on any failure."""
-    try:
-        return round(float(value) * 100, decimals)
-    except Exception:
-        return EMPTY
-
-
-def _cm2(value, decimals=2):
-    """Convert m² → cm². Returns EMPTY on any failure."""
-    try:
-        return round(float(value) * 1e4, decimals)
-    except Exception:
-        return EMPTY
-
-
-def _cm3(value, decimals=2):
-    """Convert m³ → cm³. Returns EMPTY on any failure."""
-    try:
-        return round(float(value) * 1e6, decimals)
-    except Exception:
-        return EMPTY
-
-
-def _cm4(value, decimals=2):
-    """Convert m⁴ → cm⁴. Returns EMPTY on any failure."""
-    try:
-        return round(float(value) * 1e8, decimals)
-    except Exception:
-        return EMPTY
-
-
-def _cm6(value, decimals=2):
-    """Convert m⁶ → cm⁶. Returns EMPTY on any failure."""
-    try:
-        return round(float(value) * 1e12, decimals)
-    except Exception:
-        return EMPTY
-
-
 def _val(value):
     """Return value as-is, or EMPTY if missing/blank."""
     return value if value not in (None, "", [], {}) else EMPTY
@@ -244,18 +204,19 @@ def resolve_girder_section_properties(output_dict: dict) -> dict | None:
                 _val(_gk(KEY_MP_GIRDER_TORSIONAL_RESTRAINT,    gi, mi)),
                 _val(_gk(KEY_MP_GIRDER_WARPING_RESTRAINT,      gi, mi)),
                 _val(_gk(KEY_MP_GIRDER_WEB_TYPE,               gi, mi)),
-                _num(_gk(KEY_MP_GIRDER_MASS,                   gi, mi)),  # kg/m, no conversion
-                _cm2(_gk(KEY_MP_GIRDER_SECTIONAL_AREA,         gi, mi)),  # m² → cm²
-                _cm4(_gk(KEY_MP_GIRDER_SECTIONAL_IZ,           gi, mi)),  # m⁴ → cm⁴
-                _cm4(_gk(KEY_MP_GIRDER_SECTIONAL_IY,           gi, mi)),
-                _cm (_gk(KEY_MP_GIRDER_RADIUS_GYRATION_Z,      gi, mi)),  # m → cm
-                _cm (_gk(KEY_MP_GIRDER_RADIUS_GYRATION_Y,      gi, mi)),
-                _cm3(_gk(KEY_MP_GIRDER_ELASTIC_MODULUS_ZZ,     gi, mi)),  # m³ → cm³
-                _cm3(_gk(KEY_MP_GIRDER_ELASTIC_MODULUS_ZY,     gi, mi)),
-                _cm3(_gk(KEY_MP_GIRDER_PLASTIC_MODULUS_ZUZ,    gi, mi)),
-                _cm3(_gk(KEY_MP_GIRDER_PLASTIC_MODULUS_ZUY,    gi, mi)),
-                _cm4(_gk(KEY_MP_GIRDER_TORSION_CONSTANT_IT,    gi, mi)),
-                _cm6(_gk(KEY_MP_GIRDER_WARPING_CONSTANT_IW,    gi, mi)),  # m⁶ → cm⁶
+                # Designed section; KEY_SD values are already in kg/m, cm², cm⁴, cm, cm³, cm⁶.
+                _num(_gk(KEY_SD_SECTION_PROP_MASS,       gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_AREA,       gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_IZ,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_IV,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_RZ,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_RV,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_ZZ,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_ZV,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_ZUZ,        gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_ZUV,        gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_IT,         gi, mi)),
+                _num(_gk(KEY_SD_SECTION_PROP_IW,         gi, mi)),
             ])
             mi += 1
 

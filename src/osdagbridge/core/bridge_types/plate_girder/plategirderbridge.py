@@ -91,6 +91,7 @@ from osdagbridge.core.utils.common import (
     KEY_WC_THICKNESS,
     KEY_LL_ECCENTRICITY,
     KEY_WC_DENSITY,
+    KEY_MP_GIRDER_TYPE,
     KEY_MP_GIRDER_SYMMETRY, KEY_MP_GIRDER_DEPTH, KEY_MP_GIRDER_WEB_DEPTH, KEY_MP_GIRDER_WEB_THICKNESS,
     KEY_MP_GIRDER_TOP_FLANGE_WIDTH, KEY_MP_GIRDER_TOP_FLANGE_THICKNESS,
     KEY_MP_GIRDER_BOTTOM_FLANGE_WIDTH, KEY_MP_GIRDER_BOTTOM_FLANGE_THICKNESS,
@@ -144,18 +145,6 @@ from osdagbridge.core.utils.common import (
     KEY_SD_SHEAR_STUDS_PER_SECTION,
     KEY_SD_SHEAR_LONGITUDINAL_SPACING,
     # Section properties card
-    KEY_MP_GIRDER_MASS,
-    KEY_MP_GIRDER_SECTIONAL_AREA,
-    KEY_MP_GIRDER_SECTIONAL_IZ,
-    KEY_MP_GIRDER_SECTIONAL_IY,
-    KEY_MP_GIRDER_RADIUS_GYRATION_Z,
-    KEY_MP_GIRDER_RADIUS_GYRATION_Y,
-    KEY_MP_GIRDER_ELASTIC_MODULUS_ZZ,
-    KEY_MP_GIRDER_ELASTIC_MODULUS_ZY,
-    KEY_MP_GIRDER_PLASTIC_MODULUS_ZUZ,
-    KEY_MP_GIRDER_PLASTIC_MODULUS_ZUY,
-    KEY_MP_GIRDER_TORSION_CONSTANT_IT,
-    KEY_MP_GIRDER_WARPING_CONSTANT_IW,
     KEY_SD_SECTION_PROP_MASS,
     KEY_SD_SECTION_PROP_AREA,
     KEY_SD_SECTION_PROP_IZ,
@@ -246,6 +235,7 @@ from osdagbridge.core.utils.common import (
 
 from osdagbridge.core.bridge_types.plate_girder.initial_sizing import (
     DEFAULT_DECK_THICKNESS as _DEFAULT_DECK_THICKNESS_MM,
+    steel_i_section_properties,
 )
 from osdagbridge.core.bridge_components.super_structure.deck.geometry import (
     deck_thickness_from_inputs,
@@ -622,6 +612,58 @@ class PlateGirderBridge:
             for gi in range(count):
                 _to_m(f"{base_key}.G{gi + 1}.M1")
 
+    def _refresh_girder_section_properties(self) -> None:
+        """
+        Recompute each welded girder's section properties from its final plate
+        dimensions, in SI (m², m⁴, m, m³, m⁶, kg/m).
+
+        The stored properties come from the unrounded initial sizing, while the
+        dimensions are rounded up to SAIL thicknesses (by defaults.py in Custom
+        mode, by _resolve_optimized_bounds_to_mm in Optimized mode). Without this
+        refresh the grillage model, Output Dock and results tables describe a
+        thinner section than the one the designer checks.
+
+        Rolled girders keep their catalogue properties. Must run after
+        _convert_girder_dims_mm_to_m, so every dimension is in metres.
+        """
+        _PROP_KEYS = [
+            KEY_MP_GIRDER_MASS,
+            KEY_MP_GIRDER_SECTIONAL_AREA,
+            KEY_MP_GIRDER_SECTIONAL_IZ,
+            KEY_MP_GIRDER_SECTIONAL_IY,
+            KEY_MP_GIRDER_RADIUS_GYRATION_Z,
+            KEY_MP_GIRDER_RADIUS_GYRATION_Y,
+            KEY_MP_GIRDER_ELASTIC_MODULUS_ZZ,
+            KEY_MP_GIRDER_ELASTIC_MODULUS_ZY,
+            KEY_MP_GIRDER_PLASTIC_MODULUS_ZUZ,
+            KEY_MP_GIRDER_PLASTIC_MODULUS_ZUY,
+            KEY_MP_GIRDER_TORSION_CONSTANT_IT,
+            KEY_MP_GIRDER_WARPING_CONSTANT_IW,
+        ]
+
+        inp = self.input_dict
+        for gi in range(self._girder_count()):
+            suffix = f".G{gi + 1}.M1"
+            girder_type = inp.get(f"{KEY_MP_GIRDER_TYPE}{suffix}", inp.get(KEY_MP_GIRDER_TYPE, "Welded"))
+            if str(girder_type).strip().lower() != "welded":
+                continue
+
+            g = lambda key: float(resolve_girder_value(inp, key, gi))
+            props = steel_i_section_properties(
+                D=g(KEY_MP_GIRDER_DEPTH),
+                bf_top=g(KEY_MP_GIRDER_TOP_FLANGE_WIDTH),
+                tf_top=g(KEY_MP_GIRDER_TOP_FLANGE_THICKNESS),
+                bf_bot=g(KEY_MP_GIRDER_BOTTOM_FLANGE_WIDTH),
+                tf_bot=g(KEY_MP_GIRDER_BOTTOM_FLANGE_THICKNESS),
+                tw=g(KEY_MP_GIRDER_WEB_THICKNESS),
+            )
+            for key in _PROP_KEYS:
+                inp[f"{key}{suffix}"] = props[key]
+                # Legacy scalar key, resolved first by no-index consumers; use the
+                # first girder's values (same rule as _resolve_optimized_bounds_to_mm).
+                if gi == 0 and key in inp:
+                    inp[key] = props[key]
+
     def _run_stage(self, stage_num: str, func, *args, **kwargs):
         # Check for user cancel before entering each stage, then emit start/complete markers
         bridge_logger.check_cancel()
@@ -718,7 +760,8 @@ class PlateGirderBridge:
             # Pre-stage: Unit conversions (must run before validation)
             self._resolve_optimized_bounds_to_mm()
             self._convert_girder_dims_mm_to_m()
-            
+            self._refresh_girder_section_properties()
+
             # Stage 1: Input Validation
             self._run_stage("1", self._validate_inputs)
             

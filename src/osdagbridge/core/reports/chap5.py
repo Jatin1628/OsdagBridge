@@ -343,9 +343,10 @@ def ch5_design_checks(checks_data, bridge) -> str:
             return ""
         return f"{float(v) * scale:.{nd}f}" + unit
 
-    _iy_cm4_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IV, 1e8, 1, " cm$^4$")
-    _it_cm4_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IT, 1e8, 1, " cm$^4$")
-    _iw_cm6_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IW, 1e12, 3, " cm$^6$")
+    # KEY_SD section properties are already stored in cm units (store_design_results).
+    _iy_cm4_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IV, 1.0, 1, " cm$^4$")
+    _it_cm4_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IT, 1.0, 1, " cm$^4$")
+    _iw_cm6_str = _render_scaled(bridge.output_dict, KEY_SD_SECTION_PROP_IW, 1.0, 2, " cm$^6$")
     _g_mpa_str  = _render_scaled(bridge.input_dict,  KEY_MATERIAL_GIRDER_G, 1000.0, 1, " MPa")
     _e_mpa_str  = _render_scaled(bridge.input_dict,  KEY_MATERIAL_GIRDER_E, 1000.0, 1, " MPa, ")
 
